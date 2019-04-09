@@ -289,7 +289,43 @@ public interface BIG_LIST KEY_GENERIC extends BigList<KEY_GENERIC_CLASS>, COLLEC
 	KEY_GENERIC_CLASS set(long index, KEY_GENERIC_CLASS k);
 #endif
 
-	// Without any toBigArray methods, there is no sensible default sort methods we can have.
+#if defined KEY_COMPARATOR && KEYS_PRIMITIVE
+	/** {@inheritDoc}
+	 * @deprecated Please use the corresponding type-specific method instead.
+	 */
+	@Deprecated
+	default void unstableSort(final java.util.Comparator<? super KEY_GENERIC_CLASS> comparator) {
+		unstableSort(COMPARATORS.AS_KEY_COMPARATOR(comparator));
+	}
+	
+	/** Sorts this list using a sort not assured to be stable.
+	 * 
+	 * <p>Pass {@code null} to sort using natural ordering.
+	 *
+	 * <p>This differs from {@link List#sort(java.util.Comparator)} in that the results are
+	 * not assured to be stable, but may be a bit faster.
+	 *
+	 * <p>Unless a subclass specifies otherwise, the results of the method if the list is
+	 * concurrently modified during the sort are unspecified.
+	 *
+	 * @implSpec The default implementation dumps the elements into a list using
+	 * {@link #getElements}, sorts the array, then replaces all elements using the
+	 * {@link #setElements} function.
+	 *
+	 * @since 8.3.0
+	 */
+	default void unstableSort(final KEY_COMPARATOR comparator) {
+		// TODO When (or if) toBigArray is added, use that.
+		KEY_TYPE[][] elements = BIG_ARRAYS.newBigArray(size64());
+		getElements(elements);
+		if (comparator == null) {
+			BIG_ARRAYS.unstableSort(elements);
+		} else {
+			BIG_ARRAYS.unstableSort(elements, comparator);
+		}
+		setElements(elements);
+	}
+#endif
 
 	/** Reabstracts the inappropriate {@code spliterator} method from the type-specific big list interface. */
 	public static interface ImplementsSpliterator KEY_GENERIC extends BIG_LIST KEY_GENERIC, COLLECTION.ImplementsSpliterator KEY_GENERIC {
